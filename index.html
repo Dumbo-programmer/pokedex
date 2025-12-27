@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pokedex Slideshow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --miku-cyan: #39c5bb;
+      --miku-blue: #1b6ca8;
+      --miku-green: #7de2d1;
+      --miku-dark: #181c24;
+      --glass-bg: rgba(24, 28, 36, 0.7);
+      --glass-border: rgba(57, 197, 187, 0.3);
+      --white: #fff;
+      --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    }
+    body {
+      background: linear-gradient(135deg, var(--miku-dark) 0%, var(--miku-blue) 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Montserrat', sans-serif;
+      margin: 0;
+      overflow: hidden;
+    }
+    .slideshow-container {
+      position: relative;
+      width: 370px;
+      height: 540px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      perspective: 1200px;
+    }
+    .card {
+      width: 340px;
+      height: 500px;
+      background: var(--glass-bg);
+      border-radius: 32px;
+      box-shadow: var(--shadow);
+      border: 2.5px solid var(--glass-border);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      position: absolute;
+      top: 0;
+      left: 0;
+      opacity: 0;
+      transform: translateX(100%) scale(0.95) rotateY(30deg);
+      transition: all 0.7s cubic-bezier(.77,0,.18,1);
+      z-index: 1;
+    }
+    .card.active {
+      opacity: 1;
+      transform: translateX(0) scale(1) rotateY(0deg);
+      z-index: 2;
+    }
+    .card.swipe-left {
+      opacity: 0;
+      transform: translateX(-100%) scale(0.95) rotateY(-30deg);
+      z-index: 1;
+    }
+    .card.swipe-right {
+      opacity: 0;
+      transform: translateX(100%) scale(0.95) rotateY(30deg);
+      z-index: 1;
+    }
+    .card-header {
+      width: 100%;
+      padding: 24px 0 0 0;
+      text-align: center;
+      color: var(--miku-cyan);
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-shadow: 0 2px 8px var(--miku-blue);
+      user-select: none;
+    }
+    .card-img {
+      width: 220px;
+      height: 220px;
+      margin: 18px 0 0 0;
+      border-radius: 24px;
+      background: linear-gradient(135deg, var(--miku-cyan) 0%, var(--miku-green) 100%);
+      box-shadow: 0 4px 32px 0 rgba(57,197,187,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border: 3px solid var(--miku-cyan);
+    }
+    .card-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 16px var(--miku-cyan));
+      background: transparent;
+    }
+    .card-info {
+      width: 90%;
+      margin: 24px auto 0 auto;
+      background: rgba(57,197,187,0.08);
+      border-radius: 16px;
+      padding: 16px 12px;
+      color: var(--white);
+      font-size: 1.1rem;
+      font-weight: 400;
+      box-shadow: 0 2px 12px 0 rgba(57,197,187,0.08);
+      text-align: center;
+      letter-spacing: 0.5px;
+      user-select: none;
+    }
+    .card-footer {
+      margin-top: auto;
+      width: 100%;
+      padding: 0 0 24px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card-id {
+      color: var(--miku-green);
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-left: 24px;
+      letter-spacing: 1px;
+      opacity: 0.7;
+    }
+    .card-type {
+      margin-right: 24px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--miku-cyan);
+      opacity: 0.8;
+      letter-spacing: 1px;
+    }
+    .slideshow-buttons {
+      position: absolute;
+      bottom: -60px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 32px;
+      z-index: 10;
+    }
+    .slideshow-btn {
+      background: linear-gradient(135deg, var(--miku-cyan) 0%, var(--miku-blue) 100%);
+      border: none;
+      border-radius: 50%;
+      width: 54px;
+      height: 54px;
+      color: var(--white);
+      font-size: 2rem;
+      box-shadow: 0 2px 12px 0 rgba(57,197,187,0.18);
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+      outline: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+    }
+    .slideshow-btn:active {
+      background: linear-gradient(135deg, var(--miku-blue) 0%, var(--miku-cyan) 100%);
+      transform: scale(0.93);
+    }
+    @media (max-width: 500px) {
+      .slideshow-container {
+        width: 98vw;
+        height: 80vw;
+        min-width: 0;
+        min-height: 0;
+      }
+      .card {
+        width: 94vw;
+        height: 76vw;
+        min-width: 0;
+        min-height: 0;
+      }
+      .card-img {
+        width: 48vw;
+        height: 48vw;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="slideshow-container" id="slideshow">
+    <!-- Cards will be injected here -->
+    <div class="slideshow-buttons">
+      <button class="slideshow-btn" id="prevBtn" aria-label="Previous">&#8592;</button>
+      <button class="slideshow-btn" id="nextBtn" aria-label="Next">&#8594;</button>
+    </div>
+  </div>
+  <script>
+    // Example Pokemon data (replace with real data as needed)
+    // Type color and icon map
+    const typeMap = {
+      Grass:  { color: '#48d05f', icon: '🌿' },
+      Fire:   { color: '#ff6c3c', icon: '🔥' },
+      Water:  { color: '#3db9ff', icon: '💧' },
+      Electric: { color: '#ffe14c', icon: '⚡' },
+      Psychic: { color: '#ff6ec7', icon: '🔮' },
+      Ice:    { color: '#6eeaff', icon: '❄️' },
+      Dragon: { color: '#8e6cff', icon: '🐉' },
+      Dark:   { color: '#5a566a', icon: '🌑' },
+      Fairy:  { color: '#ffb6f7', icon: '✨' },
+      Fighting: { color: '#e96b39', icon: '🥊' },
+      Flying: { color: '#a1bbec', icon: '🕊️' },
+      Bug:    { color: '#a8b820', icon: '🐛' },
+      Rock:   { color: '#b8a058', icon: '🪨' },
+      Ground: { color: '#e2c275', icon: '🌎' },
+      Steel:  { color: '#b8b8d0', icon: '⚙️' },
+      Poison: { color: '#a040a0', icon: '☠️' },
+      Ghost:  { color: '#705898', icon: '👻' },
+      Normal: { color: '#bdbdaf', icon: '🔘' },
+      Vocaloid: { color: '#39c5bb', icon: '🎤' },
+    };
+    // Add a color property to each card
+    const pokemonData = [
+      { id: '#001', name: 'Sehtop', type: 'Grass', info: 'The you I see from top. Innocent & cute', img: 'img/1.png' },
+      { id: '#002', name: 'Seh Marceline', type: 'Grass', info: 'You cosplaying Marceline', img: 'img/2.jpg' },
+      { id: '#004', name: 'Seh Cat ', type: 'Fire', info: 'Rwarrrr purr', img: 'img/4.jpg' },
+      { id: '#005', name: 'Charmander', type: 'Fire', info: 'The more I look at you here, the more I fall in love', img: 'img/5.jpg' },
+      { id: '#006', name: 'Charizard', type: 'Fire', info: ':000', img: 'img/6.png' },
+      { id: '#007', name: 'Squirtle', type: 'Water', info: 'I love you in this dress so much', img: 'img/7.png' },
+      { id: '#008', name: 'Wartortle', type: 'Water', info: 'omg the way you poutttt ', img: 'img/8.png' },
+      { id: '#009', name: 'Blastoise', type: 'Water', info: 'Whenever I see you here, I forget everything', img: 'img/9.png' },
+      { id: '#010', name: 'Doll', type: 'Vocaloid', info: 'You look like a vocaloid here', img: 'img/11.jpg' },
+    ];
+
+    const slideshow = document.getElementById('slideshow');
+    let current = 0;
+    let cards = [];
+
+    function createCard(pokemon, idx) {
+      const card = document.createElement('div');
+      card.className = 'card';
+      if (idx === 0) card.classList.add('active');
+      // Get type color and icon
+      const type = typeMap[pokemon.type] || { color: '#fff', icon: '' };
+      card.style.setProperty('--type-color', type.color);
+      card.innerHTML = `
+        <div class="card-header" style="color: ${type.color}">
+          ${pokemon.name}
+        </div>
+        <div class="card-img" style="border-color: ${type.color}; box-shadow: 0 4px 32px 0 ${type.color}33;">
+          <img src="${pokemon.img}" alt="${pokemon.name}">
+        </div>
+        <div class="card-info">${pokemon.info}</div>
+        <div class="card-footer">
+          <span class="card-id">${pokemon.id}</span>
+          <span class="card-type" style="color: ${type.color}">
+            <span style="font-size:1.3em;vertical-align:middle;">${type.icon}</span> ${pokemon.type}
+          </span>
+        </div>
+      `;
+      slideshow.appendChild(card);
+      return card;
+    }
+
+    function showCard(nextIdx, direction) {
+      if (nextIdx === current) return;
+      const prevCard = cards[current];
+      const nextCard = cards[nextIdx];
+      // Remove all classes from all cards except base 'card'
+      cards.forEach(card => {
+        card.classList.remove('active', 'swipe-left', 'swipe-right');
+      });
+      // Prepare next card for animation: always flat, no tilt
+      nextCard.style.transition = 'none';
+      nextCard.style.transform = 'translateX(' + (direction === 'left' ? '-100%' : '100%') + ') scale(0.95)';
+      nextCard.style.opacity = '0';
+      // Animate out previous card with tilt
+      prevCard.classList.add(direction === 'left' ? 'swipe-left' : 'swipe-right');
+      // Animate in next card after a short delay
+      setTimeout(() => {
+        // Animate next card in flat
+        nextCard.style.transition = 'all 0.7s cubic-bezier(.77,0,.18,1)';
+        nextCard.style.transform = 'translateX(0) scale(1)';
+        nextCard.style.opacity = '1';
+        nextCard.classList.add('active');
+        // Clean up outgoing card
+        prevCard.classList.remove('active', 'swipe-left', 'swipe-right');
+        // After animation, reset inline styles
+        setTimeout(() => {
+          nextCard.style.transition = '';
+          nextCard.style.transform = '';
+          nextCard.style.opacity = '';
+        }, 700);
+        current = nextIdx;
+      }, 200);
+    }
+
+    function nextCardFn() {
+      const nextIdx = (current + 1) % cards.length;
+      showCard(nextIdx, 'right');
+    }
+    function prevCardFn() {
+      const nextIdx = (current - 1 + cards.length) % cards.length;
+      showCard(nextIdx, 'left');
+    }
+
+    // Touch swipe support
+    let startX = null;
+    slideshow.addEventListener('touchstart', e => {
+      if (e.touches.length === 1) startX = e.touches[0].clientX;
+    });
+    slideshow.addEventListener('touchend', e => {
+      if (startX === null) return;
+      const endX = e.changedTouches[0].clientX;
+      if (endX - startX > 60) prevCardFn();
+      else if (startX - endX > 60) nextCardFn();
+      startX = null;
+    });
+
+    // Keyboard support
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowLeft') prevCardFn();
+      if (e.key === 'ArrowRight') nextCardFn();
+    });
+
+    // Button support
+    document.getElementById('prevBtn').onclick = prevCardFn;
+    document.getElementById('nextBtn').onclick = nextCardFn;
+
+    // Initialize cards
+    pokemonData.forEach((p, i) => cards.push(createCard(p, i)));
+  </script>
+</body>
+</html>

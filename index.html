@@ -201,8 +201,7 @@
     </div>
   </div>
   <script>
-    // Example Pokemon data (replace with real data as needed)
-    // Type color and icon map
+
     const typeMap = {
       Grass:  { color: '#48d05f', icon: '🌿' },
       Fire:   { color: '#ff6c3c', icon: '🔥' },
@@ -224,7 +223,6 @@
       Normal: { color: '#bdbdaf', icon: '🔘' },
       Vocaloid: { color: '#39c5bb', icon: '🎤' },
     };
-    // Add a color property to each card
     const pokemonData = [
       { id: '#001', name: 'Sehtop', type: 'Grass', info: 'The you I see from top. Innocent & cute', img: 'img/1.png' },
       { id: '#002', name: 'Seh Marceline', type: 'Grass', info: 'You cosplaying Marceline', img: 'img/2.jpg' },
@@ -245,7 +243,6 @@
       const card = document.createElement('div');
       card.className = 'card';
       if (idx === 0) card.classList.add('active');
-      // Get type color and icon
       const type = typeMap[pokemon.type] || { color: '#fff', icon: '' };
       card.style.setProperty('--type-color', type.color);
       card.innerHTML = `
@@ -271,26 +268,19 @@
       if (nextIdx === current) return;
       const prevCard = cards[current];
       const nextCard = cards[nextIdx];
-      // Remove all classes from all cards except base 'card'
       cards.forEach(card => {
         card.classList.remove('active', 'swipe-left', 'swipe-right');
       });
-      // Prepare next card for animation: always flat, no tilt
       nextCard.style.transition = 'none';
       nextCard.style.transform = 'translateX(' + (direction === 'left' ? '-100%' : '100%') + ') scale(0.95)';
       nextCard.style.opacity = '0';
-      // Animate out previous card with tilt
       prevCard.classList.add(direction === 'left' ? 'swipe-left' : 'swipe-right');
-      // Animate in next card after a short delay
       setTimeout(() => {
-        // Animate next card in flat
         nextCard.style.transition = 'all 0.7s cubic-bezier(.77,0,.18,1)';
         nextCard.style.transform = 'translateX(0) scale(1)';
         nextCard.style.opacity = '1';
         nextCard.classList.add('active');
-        // Clean up outgoing card
         prevCard.classList.remove('active', 'swipe-left', 'swipe-right');
-        // After animation, reset inline styles
         setTimeout(() => {
           nextCard.style.transition = '';
           nextCard.style.transform = '';
@@ -309,7 +299,6 @@
       showCard(nextIdx, 'left');
     }
 
-    // Touch swipe support
     let startX = null;
     slideshow.addEventListener('touchstart', e => {
       if (e.touches.length === 1) startX = e.touches[0].clientX;
@@ -322,13 +311,11 @@
       startX = null;
     });
 
-    // Keyboard support
     document.addEventListener('keydown', e => {
       if (e.key === 'ArrowLeft') prevCardFn();
       if (e.key === 'ArrowRight') nextCardFn();
     });
 
-    // Button support
     document.getElementById('prevBtn').onclick = prevCardFn;
     document.getElementById('nextBtn').onclick = nextCardFn;
 

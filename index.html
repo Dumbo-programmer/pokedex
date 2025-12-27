@@ -19,7 +19,7 @@
       --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
     }
     body {
-      background: linear-gradient(135deg, var(--miku-dark) 0%, var(--miku-blue) 100%);
+      background: #0a0a0a;
       min-height: 100vh;
       display: flex;
       align-items: center;
@@ -193,14 +193,77 @@
   </style>
 </head>
 <body>
-  <div class="slideshow-container" id="slideshow">
-    <!-- Cards will be injected here -->
+  <canvas id="snow-canvas" style="position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:0;pointer-events:none;"></canvas>
+  <div class="slideshow-container" id="slideshow" style="z-index:1;">
+    <div class="card-stack" id="card-stack"></div>
     <div class="slideshow-buttons">
       <button class="slideshow-btn" id="prevBtn" aria-label="Previous">&#8592;</button>
       <button class="slideshow-btn" id="nextBtn" aria-label="Next">&#8594;</button>
     </div>
   </div>
   <script>
+    // Snowfall effect
+    const snowCanvas = document.getElementById('snow-canvas');
+    const ctx = snowCanvas.getContext('2d');
+    let snowflakes = [];
+    function resizeSnow() {
+      snowCanvas.width = window.innerWidth;
+      snowCanvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeSnow);
+    resizeSnow();
+    function createSnowflake() {
+      return {
+        x: Math.random() * snowCanvas.width,
+        y: -10,
+        r: 1.5 + Math.random() * 2.5,
+        d: 1 + Math.random() * 1.5,
+        opacity: 0.7 + Math.random() * 0.3,
+        drift: (Math.random() - 0.5) * 0.5
+      };
+    }
+    function drawSnow() {
+      ctx.clearRect(0, 0, snowCanvas.width, snowCanvas.height);
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      for (let i = 0; i < snowflakes.length; i++) {
+        let s = snowflakes[i];
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,255,255,${s.opacity})`;
+        // Removed shadow for performance
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+    function updateSnow() {
+      for (let i = 0; i < snowflakes.length; i++) {
+        let s = snowflakes[i];
+        s.y += s.d;
+        s.x += s.drift;
+        if (s.y > snowCanvas.height + 5) {
+          // reset to top
+          snowflakes[i] = createSnowflake();
+          snowflakes[i].y = -10;
+        }
+      }
+      // Add more snowflakes if needed
+      const MAX_SNOWFLAKES = 100;
+      let targetFlakes = Math.max(40, Math.floor(window.innerWidth / 18));
+      targetFlakes = Math.min(MAX_SNOWFLAKES, targetFlakes);
+      while (snowflakes.length < targetFlakes) {
+        snowflakes.push(createSnowflake());
+      }
+      if (snowflakes.length > targetFlakes) {
+        snowflakes.length = targetFlakes;
+      }
+    }
+    function snowLoop() {
+      updateSnow();
+      drawSnow();
+      requestAnimationFrame(snowLoop);
+    }
+    snowLoop();
 
     const typeMap = {
       Grass:  { color: '#48d05f', icon: '🌿' },
@@ -236,6 +299,7 @@
     ];
 
     const slideshow = document.getElementById('slideshow');
+    const cardStack = document.getElementById('card-stack');
     let current = 0;
     let cards = [];
 
@@ -260,12 +324,14 @@
           </span>
         </div>
       `;
-      slideshow.appendChild(card);
+      cardStack.appendChild(card);
       return card;
     }
 
     function showCard(nextIdx, direction) {
+      if (cards.length === 0) return;
       if (nextIdx === current) return;
+      if (nextIdx < 0 || nextIdx >= cards.length) return;
       const prevCard = cards[current];
       const nextCard = cards[nextIdx];
       cards.forEach(card => {
@@ -291,11 +357,13 @@
     }
 
     function nextCardFn() {
-      const nextIdx = (current + 1) % cards.length;
+      if (cards.length <= 1) return;
+      const nextIdx = ((current + 1) % cards.length + cards.length) % cards.length;
       showCard(nextIdx, 'right');
     }
     function prevCardFn() {
-      const nextIdx = (current - 1 + cards.length) % cards.length;
+      if (cards.length <= 1) return;
+      const nextIdx = ((current - 1 + cards.length) % cards.length + cards.length) % cards.length;
       showCard(nextIdx, 'left');
     }
 
